@@ -13,6 +13,9 @@
 NAME		=	cub3d
 
 SRC			=	main.c \
+					validation.c \
+					utils.c \
+					parsing.c \
 
 LIBFT		=	libft/libft.a
 
@@ -26,7 +29,7 @@ CFLAGS		= -Wextra -Wall -Werror
 
 $(NAME):	$(OBJ)
 			make -C ./libft
-			$(CC) $(CFLAGS) -g -o $(NAME) $(OBJ) $(LIBFT)
+			$(CC) $(CFLAGS) -g -o $(NAME) $(OBJ) $(LIBFT) -fsanitize=address
 
 all:		$(NAME)
 
