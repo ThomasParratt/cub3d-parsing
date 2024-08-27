@@ -5,19 +5,15 @@
 #include <fcntl.h>
 #include "libft/include/libft.h"
 
-// typedef struct s_textures
-// {
-// 	char    *no_path;
-//     char    *so_path;
-//     char    *ea_path;
-//     char    *we_path;
-//     char    *floor;
-//     char    *ceiling;
-// }				t_textures;
-
 typedef struct s_map
 {
 	char    **map; //this is a 2d array of the map part of the .cub file
+ 	char    *no;
+    char    *so;
+    char    *ea;
+    char    *we;
+    char    *floor;
+    char    *ceiling;
 }				t_map;
 
 #endif

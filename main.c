@@ -12,6 +12,8 @@
 
 #include "cub3d.h"
 
+// need malloc protections
+
 static void free_2d(char **arr)
 {
     int i;
@@ -37,7 +39,7 @@ static void print_2d(char **arr)
     }
 }
 
-static int parse_line(char *line)
+static int identify_line(char *line)
 {
     if (!ft_strncmp(line, "NO", 2) || !ft_strncmp(line, "SO", 2) || !ft_strncmp(line, "EA", 2) || !ft_strncmp(line, "WE", 2) ||
             !ft_strncmp(line, "F", 1) || !ft_strncmp(line, "C", 1))
@@ -48,10 +50,38 @@ static int parse_line(char *line)
     else if (!ft_strncmp(line, "\n", 1)) // or all whitespace
     {
         //ft_putendl_fd("Empty line", 1);
-        return (0);
+        return (1);
     }
     else // need a validity check before putting into 2d array
-        return (1);
+        return (2);
+}
+
+static int file_to_map(t_map *map, int i, char *line)
+{
+    char    **arr;
+
+    if (identify_line(line) == 2)
+    {
+        map->map[i] = ft_strdup(line);
+        i++;
+    }
+    else if (identify_line(line) == 0)
+    {
+        arr = ft_split(line, ' '); //should it be just space or whitespace also?
+        if (!ft_strncmp(arr[0], "NO", 2))
+            map->no = ft_strdup(arr[1]);
+        if (!ft_strncmp(arr[0], "SO", 2))
+            map->so = ft_strdup(arr[1]);
+        if (!ft_strncmp(arr[0], "EA", 2))
+            map->ea = ft_strdup(arr[1]);
+        if (!ft_strncmp(arr[0], "WE", 2))
+            map->we = ft_strdup(arr[1]);
+        if (!ft_strncmp(arr[0], "F", 1)) // do these need to be atoied?
+            map->floor = ft_strdup(arr[1]); 
+        if (!ft_strncmp(arr[0], "C", 2)) // do these need to be atoied?
+            map->ceiling = ft_strdup(arr[1]);
+    }
+    return (i);
 }
 
 static void set_map(char *arg, int lines, t_map *map)
@@ -64,22 +94,16 @@ static void set_map(char *arg, int lines, t_map *map)
     fd = open(arg, O_RDONLY);
     i = 0;
     line = get_next_line(fd);
-    if (parse_line(line))
-    {
-        map->map[i] = ft_strdup(line);
-        i++;
-    }
+    i = file_to_map(map, i, line);
+    //ft_putstr_fd(map->map[i], 1);
     while (line)
     {
         free(line);
         line = get_next_line(fd);
         if (!line)
             break ;
-        if (parse_line(line))
-        {
-            map->map[i] = ft_strdup(line);
-            i++;
-        }
+        i = file_to_map(map, i, line);
+        //ft_putstr_fd(map->map[i], 1);
     }
     map->map[i] = NULL;
     close(fd);
@@ -90,7 +114,7 @@ static void set_map(char *arg, int lines, t_map *map)
     
 // }
 
-static int  read_file(char *arg)
+static int  get_map_lines(char *arg)
 {
     int     fd;
     char    *line;
@@ -99,7 +123,7 @@ static int  read_file(char *arg)
     fd = open(arg, O_RDONLY);
     line = get_next_line(fd);
     map_lines = 0;
-    if (parse_line(line))
+    if (identify_line(line) == 2)
         map_lines++;
     while (line)
     {
@@ -107,7 +131,7 @@ static int  read_file(char *arg)
         line = get_next_line(fd);
         if (!line)
             break ;
-        if (parse_line(line))
+        if (identify_line(line) == 2)
             map_lines++;
     }
     close(fd);
@@ -136,7 +160,7 @@ int main(int argc, char **argv)
     {
         if (check_file_extension(argv[1]))
             return (1);
-        map_lines = read_file(argv[1]);
+        map_lines = get_map_lines(argv[1]);
         //ft_printf("map lines = %d\n", map_lines);
         set_map(argv[1], map_lines, &map);
         print_2d(map.map);
